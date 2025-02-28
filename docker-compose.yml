@@ -1,0 +1,8 @@
+services:
+  fluent-bit-plugin-builder:
+    build:
+      context: .
+      dockerfile: build/builder.dockerfile
+    volumes:
+      - ./plugins:/app/plugins
+      - ./release:/app/dist

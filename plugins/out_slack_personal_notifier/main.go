@@ -15,7 +15,7 @@ import (
 
 const (
 	pluginName = "slack_personal_notifier"
-	pluginDesc = "Send personal messages to Slack"
+	pluginDesc = "Send personalized direct messages via Slack"
 	printDebug = false // для отладки, выставить в `false` при сборке на проде
 )
 
@@ -66,7 +66,7 @@ type slackCfg struct {
 
 //export FLBPluginRegister
 func FLBPluginRegister(ctx unsafe.Pointer) int {
-	log.Printf("registering plugin")
+	log.Print("registering plugin")
 	return output.FLBPluginRegister(ctx, pluginName, pluginDesc)
 }
 
@@ -83,7 +83,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	userKey := output.FLBPluginConfigKey(plugin, "user_key")
 
 	if token == "" || users == "" || userKey == "" {
-		log.Println("panic: fields 'token', 'users' and 'user_key' must be not empty")
+		log.Print("panic: fields 'token', 'users' and 'user_key' cannot be empty")
 		return output.FLB_ERROR
 	}
 
@@ -134,6 +134,8 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 			log.Printf("warning: %v", err)
 			return output.FLB_RETRY
 		}
+
+		log.Printf("sent direct message to recipient '%s' with id '%s'", recipient, id)
 	}
 
 	return output.FLB_OK
@@ -148,7 +150,7 @@ func sendSlackMessage(token, id, text string) error {
 		slack.MsgOptionAsUser(true),
 	)
 	if err != nil {
-		return fmt.Errorf("failed send msg to '%s' by recipient id: %w", id, err)
+		return fmt.Errorf("failed to send message to recipient with id '%s': %w", id, err)
 	}
 
 	return nil
@@ -186,7 +188,7 @@ func convertRawTimestamp(ts any) time.Time {
 	case uint64:
 		timestamp = time.Unix(int64(t), 0)
 	default:
-		fmt.Println("warning: timestamp isn't known format, use current time")
+		log.Print("warning: timestamp isn't known format, use current time")
 
 		timestamp = time.Now()
 	}
@@ -200,10 +202,10 @@ func extractRecipient(key string, record map[any]any) (string, error) {
 			return string(strRecipient), nil
 		}
 
-		return "", fmt.Errorf("failed to convert recipient '%v' to text type", recipient)
+		return "", fmt.Errorf("failed to convert recipient '%v' to text format", recipient)
 	}
 
-	return "", fmt.Errorf("unable to determine recipient by key '%s' from message body", key)
+	return "", fmt.Errorf("unable to identify recipient by using key '%s' from the message body", key)
 }
 
 func getIdByRecipient(recipient string, users map[string]string) (string, error) {
@@ -211,7 +213,7 @@ func getIdByRecipient(recipient string, users map[string]string) (string, error)
 		return id, nil
 	}
 
-	return "", fmt.Errorf("failed to get id for recipient '%s'", recipient)
+	return "", fmt.Errorf("failed to retrieve id for recipient '%s'", recipient)
 }
 
 func main() {

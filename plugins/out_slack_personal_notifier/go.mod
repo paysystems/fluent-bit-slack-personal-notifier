@@ -1,13 +1,14 @@
 module slack-personal-notifier
 
-go 1.22.10
+go 1.26.10
 
 require (
-	github.com/fluent/fluent-bit-go v0.0.0-20230731091245-a7a013e2473c
-	github.com/slack-go/slack v0.16.0
+	github.com/fluent/fluent-bit-go v0.0.0-20260909064720-9895046d00ce
+	github.com/slack-go/slack v0.33.0
 )
 
 require (
-	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/ugorji/go/codec v1.1.7 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/ugorji/go/codec v1.3.2 // indirect
 )
